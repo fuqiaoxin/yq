@@ -9,6 +9,7 @@ import action from './action.js';
 const game_config = require('./game_config.json');
 const lang = require('./lang/en.json');
 
+
 let JCmain = {
 
     setState: function (store,value) {
@@ -118,6 +119,8 @@ let JCmain = {
             return false;
         }
 
+        this.setRank();
+
         return true;
 
     },
@@ -135,9 +138,6 @@ let JCmain = {
             .catch(function(error) {
                 console.log('Leaderboard "'+ game_config.rank_name +'" not found in app configuration')
             });
-
-
-
     },
 
     setRank(pointScore) {
@@ -152,6 +152,7 @@ let JCmain = {
             })
             .then(function(entries){
                 this.populateLeaderboard(entries);
+                this.updateContext();
             })
             .catch(function(error){
                 console.log('Error updating score leaderboard: '+ error.message);
@@ -186,12 +187,25 @@ let JCmain = {
             intent: 'SHARE',
             image: game_config.share_image,
             text: game_config.share_message,
-            data: { myReplayData: '...' },
+            data: { method: 'share', uid: this.user().uid },
         }).then(function () {
             //
         });
+    },
 
+    invite() {
+        FBInstant.shareAsync({
+            intent: 'INVITE',
+            image: game_config.share_image,
+            text: game_config.share_message,
+            data: { method: 'invite', uid: this.user().uid },
+        }).then(function () {
+            //
+        });
+    },
 
+    chooseAsync() {
+        FBInstant.context.chooseAsync();
     },
 
     payment() {
@@ -231,9 +245,15 @@ let JCmain = {
 window.JCmain = JCmain;
 
 
+const FILE_LIST = require('./files.json');
 window.onload = function() {
 
     FBInstant.initializeAsync().then(function() {
+
+        FILE_LIST.fileList.forEach(function(imgName, index){
+            FBInstant.setLoadingProgress(Math.ceil(index / FILE_LIST.fileList.length)*100);
+        });
+
 
         // Finished loading. Start the game
         FBInstant.startGameAsync().then(function() {
@@ -253,7 +273,7 @@ window.onload = function() {
 
             FBInstant.player.getSignedPlayerInfoAsync()
                 .then(function (result) {
-                    console.log(result);
+                    //console.log(result);
                     let signature = result.getSignature();
 
                     fb_user['sign'] = signature;
@@ -262,10 +282,11 @@ window.onload = function() {
 
             let res = FBInstant.getEntryPointData();
             if (res) {
-
+                console.log(res);
+                swal(JSON.stringify(res), '', 'success');
             }
 
-
+            //FBInstant.Leaderboard.getConnectedPlayerEntriesAsync();
         });
     });
 

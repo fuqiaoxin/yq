@@ -16,13 +16,6 @@ const LIB_FILES = [];
 
 function make() {
     var sourceFiles = [
-        'c2runtime.js',
-        'data.js',
-        'loading-logo.png',
-        'penumbra.png',
-        'offline.js',
-        'jquery-2.1.1.min.js',
-        'data_structure.json',
         'js/**/*',
         'images/**/*',
         'media/**/*',
